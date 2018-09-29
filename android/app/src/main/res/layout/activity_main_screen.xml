@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
@@ -12,8 +13,8 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/takePhoto"
-        android:layout_width="300dp"
-        android:layout_height="100dp"
+        android:layout_width="@dimen/buttonWidth"
+        android:layout_height="@dimen/buttonHeight"
         app:layout_constraintBottom_toTopOf="@+id/chooseGallery"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -22,11 +23,12 @@
         app:icon="@drawable/ic_camera_alt_white_24dp"
         android:text="Take a Photo"
         android:textSize="20sp"
+        android:backgroundTint="@color/colorPrimary"
         />
     <com.google.android.material.button.MaterialButton
         android:id="@+id/chooseGallery"
-        android:layout_width="300dp"
-        android:layout_height="100dp"
+        android:layout_width="@dimen/buttonWidth"
+        android:layout_height="@dimen/buttonHeight"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/takePhoto"
@@ -34,7 +36,8 @@
         app:icon="@drawable/ic_photo_black_24dp"
         android:textSize="20sp"
         android:text="Choose from Gallery"
+        android:backgroundTint="@color/colorPrimary"
         />
 
 
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
