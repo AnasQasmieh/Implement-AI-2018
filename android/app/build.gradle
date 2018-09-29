@@ -49,6 +49,9 @@ dependencies {
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
 
 
+    //Logging Network Calls
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.6.0'
+
     // Logging
     implementation 'com.jakewharton.timber:timber:4.7.1'
 }

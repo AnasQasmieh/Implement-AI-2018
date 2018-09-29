@@ -29,7 +29,10 @@ public class MainScreenActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_screen);
+        setUpButtons();
+    }
 
+    private void setUpButtons() {
         takePhoto = findViewById(R.id.takePhoto);
         chooseGallery = findViewById(R.id.chooseGallery);
 
@@ -39,8 +42,6 @@ public class MainScreenActivity extends AppCompatActivity {
            Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
            startActivityForResult(intent, CAMERA_PIC_REQUEST);
         });
-
-        
     }
 
     @Override
