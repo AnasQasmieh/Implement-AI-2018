@@ -63,3 +63,5 @@ android\.idea/caches
 
 # External native build folder generated in Android Studio 2.2 and later
 android\.externalNativeBuild
+
+android/\.idea/
