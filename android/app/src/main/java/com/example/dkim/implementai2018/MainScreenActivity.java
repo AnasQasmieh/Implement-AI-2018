@@ -1,8 +1,12 @@
 package com.example.dkim.implementai2018;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageView;
 
 import com.google.android.material.button.MaterialButton;
 
@@ -11,9 +15,12 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import timber.log.Timber;
 
 public class MainScreenActivity extends AppCompatActivity {
     final static int CAMERA_CODE = 1010;
+
+    final static int CAMERA_PIC_REQUEST = 1;
 
     MaterialButton takePhoto;
     MaterialButton chooseGallery;
@@ -27,6 +34,21 @@ public class MainScreenActivity extends AppCompatActivity {
         chooseGallery = findViewById(R.id.chooseGallery);
 
 
+        takePhoto.setOnClickListener(v -> {
+           checkAndAskForPermission();
+           Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+           startActivityForResult(intent, CAMERA_PIC_REQUEST);
+        });
+
+        
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == CAMERA_PIC_REQUEST){
+            Bitmap image = (Bitmap) data.getExtras().get("data");
+            Timber.i("Recieved Image");
+        }
     }
 
     private void checkAndAskForPermission() {
