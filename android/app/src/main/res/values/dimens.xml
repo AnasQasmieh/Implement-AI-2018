@@ -2,4 +2,15 @@
 <resources>
     <dimen name="buttonWidth">300dp</dimen>
     <dimen name="buttonHeight">100dp</dimen>
+    <dimen name="titleMargin">15dp</dimen>
+    <dimen name="titleSize">36dp</dimen>
+    <dimen name="cameraButtonTopMargin">150dp</dimen>
+    <dimen name="galleryButtonTopMargin">55dp</dimen>
+
+    <!--Analysis Screen-->
+    <dimen name="backButtonSize">32dp</dimen>
+    <dimen name="analysisImageHeight">350dp</dimen>
+    <dimen name="analysisBottomViewHeight">150dp</dimen>
+    <dimen name="analysisLogoSize">24dp</dimen>
+    <dimen name="analysisMargin">10dp</dimen>
 </resources>

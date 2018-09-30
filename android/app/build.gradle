@@ -54,4 +54,10 @@ dependencies {
 
     // Logging
     implementation 'com.jakewharton.timber:timber:4.7.1'
+
+    // Picasso
+    implementation 'com.squareup.picasso:picasso:2.71828'
+
+    // Lottie
+    implementation "com.airbnb.android:lottie:2.8.0"
 }

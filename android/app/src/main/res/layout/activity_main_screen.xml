@@ -3,41 +3,162 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Cool name"
-        android:textSize="44sp"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/takePhoto"
-        android:layout_width="@dimen/buttonWidth"
-        android:layout_height="@dimen/buttonHeight"
-        app:layout_constraintBottom_toTopOf="@+id/chooseGallery"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:animateLayoutChanges="true">
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/mainScreenLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="packed"
-        app:icon="@drawable/ic_camera_alt_white_24dp"
-        android:text="Take a Photo"
-        android:textSize="20sp"
-        android:backgroundTint="@color/colorPrimary"
-        />
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/chooseGallery"
-        android:layout_width="@dimen/buttonWidth"
-        android:layout_height="@dimen/buttonHeight"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/takePhoto"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:icon="@drawable/ic_photo_black_24dp"
-        android:textSize="20sp"
-        android:text="Choose from Gallery"
-        android:backgroundTint="@color/colorPrimary"
-        />
+        android:visibility="visible">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/backgroundlol"/>
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name"
+            android:textSize="@dimen/titleSize"
+            android:textColor="@color/white"
+            android:layout_margin="@dimen/titleMargin"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/takePhoto"
+            android:layout_width="@dimen/buttonWidth"
+            android:layout_height="@dimen/buttonHeight"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="@dimen/cameraButtonTopMargin"
+            app:icon="@drawable/ic_camera_alt_white_24dp"
+            android:text="Take a Photo"
+            android:textSize="20sp"
+            android:backgroundTint="@color/colorPrimary"
+            />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/chooseGallery"
+            android:layout_width="@dimen/buttonWidth"
+            android:layout_height="@dimen/buttonHeight"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/takePhoto"
+            android:layout_marginTop="@dimen/galleryButtonTopMargin"
+            app:icon="@drawable/ic_photo_black_24dp"
+            android:textSize="20sp"
+            android:text="Choose from Gallery"
+            android:backgroundTint="@color/colorPrimary"
+            />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/analysisLayout"
+        android:background="#000000"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+        <ImageButton
+            android:id="@+id/backButton"
+            android:layout_width="@dimen/backButtonSize"
+            android:layout_height="@dimen/backButtonSize"
+            android:layout_margin="@dimen/analysisMargin"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            android:background="@android:color/transparent"
+            app:srcCompat="@drawable/ic_cancel_black_24dp"
+            android:scaleType="fitXY"/>
+        <ImageView
+            android:id="@+id/chosenImage"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/analysisImageHeight"
+            app:layout_constraintTop_toBottomOf="@+id/backButton"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"/>
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/bottomPopUpLayout"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/analysisBottomViewHeight"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:background="#ffffff">
+            <ImageView
+                android:id="@+id/logo"
+                android:layout_height="@dimen/analysisLogoSize"
+                android:layout_width="@dimen/analysisLogoSize"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_margin="@dimen/analysisMargin"/>
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/analysisStatusText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Analyzing..."
+                android:layout_marginLeft="@dimen/analysisMargin"
+                app:layout_constraintTop_toTopOf="@id/logo"
+                app:layout_constraintLeft_toRightOf="@+id/logo"/>
+
+            <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/loadingAnimationView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:lottie_fileName="loading.json"
+            app:lottie_loop="true"
+            app:lottie_autoPlay="true"
+            app:layout_constraintTop_toBottomOf="@+id/logo"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:visibility="gone"/>
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroup"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                app:layout_constraintTop_toBottomOf="@+id/logo"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginTop="@dimen/analysisMargin"
+                android:visibility="gone">
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip1"
+                    style="@style/Widget.MaterialComponents.Chip.Action"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:chipBackgroundColor="@color/white"
+                    app:chipStrokeColor="@color/chipBorder"
+                    app:chipStrokeWidth="1dp"
+                    android:layout_margin="@dimen/analysisMargin"
+                    android:text="Early Blight"/>
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip2"
+                    style="@style/Widget.MaterialComponents.Chip.Action"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:chipBackgroundColor="@color/white"
+                    app:chipStrokeColor="@color/chipBorder"
+                    app:chipStrokeWidth="1dp"
+                    android:layout_margin="@dimen/analysisMargin"
+                    android:text="Early Blight"/>
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip3"
+                    style="@style/Widget.MaterialComponents.Chip.Action"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:chipBackgroundColor="@color/white"
+                    app:chipStrokeColor="@color/chipBorder"
+                    app:chipStrokeWidth="1dp"
+                    android:layout_margin="@dimen/analysisMargin"
+                    android:text="Early Blight"/>
+
+            </com.google.android.material.chip.ChipGroup>
+
+
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
