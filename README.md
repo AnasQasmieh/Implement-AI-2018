@@ -1,6 +1,6 @@
 # Implement-AI-2018
 
 ## Demo
-![](demo.gif)
+https://youtu.be/FrKvSrD3E4w
 
 Download dataset here https://www.crowdai.org/challenges/plantvillage-disease-classification-challenge/dataset_files
