@@ -68,7 +68,7 @@
             android:id="@+id/backButton"
             android:layout_width="@dimen/backButtonSize"
             android:layout_height="@dimen/backButtonSize"
-            android:layout_margin="@dimen/analysisMargin"
+            android:layout_margin="@dimen/backButtonMargin"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             android:background="@android:color/transparent"
@@ -78,22 +78,28 @@
             android:id="@+id/chosenImage"
             android:layout_width="match_parent"
             android:layout_height="@dimen/analysisImageHeight"
-            app:layout_constraintTop_toBottomOf="@+id/backButton"
+            android:layout_marginTop="@dimen/chosenImageMarginTop"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"/>
+            app:layout_constraintRight_toRightOf="parent"
+            android:contentDescription="@string/chosenimageview" />
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/bottomPopUpLayout"
             android:layout_width="match_parent"
             android:layout_height="@dimen/analysisBottomViewHeight"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:background="#ffffff">
-            <ImageView
+            android:background="@drawable/layout_bottom_analysis_background">
+            <com.airbnb.lottie.LottieAnimationView
                 android:id="@+id/logo"
-                android:layout_height="@dimen/analysisLogoSize"
                 android:layout_width="@dimen/analysisLogoSize"
+                android:layout_height="@dimen/analysisLogoSize"
+                app:lottie_fileName="happy_tree.json"
+                app:lottie_loop="true"
+                app:lottie_autoPlay="true"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                android:layout_margin="@dimen/analysisMargin"/>
+                android:layout_margin="@dimen/analysisMargin"
+                android:visibility="visible"/>
 
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/analysisStatusText"
@@ -102,7 +108,9 @@
                 android:text="Analyzing..."
                 android:layout_marginLeft="@dimen/analysisMargin"
                 app:layout_constraintTop_toTopOf="@id/logo"
-                app:layout_constraintLeft_toRightOf="@+id/logo"/>
+                app:layout_constraintLeft_toRightOf="@+id/logo"
+                android:textSize="@dimen/analysisTitleSize"
+                android:textColor="#000"/>
 
             <com.airbnb.lottie.LottieAnimationView
             android:id="@+id/loadingAnimationView"
@@ -118,10 +126,12 @@
                 android:id="@+id/chipGroup"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
+                app:layout_constraintLeft_toLeftOf="@+id/logo"
                 app:layout_constraintTop_toBottomOf="@+id/logo"
                 app:layout_constraintBottom_toBottomOf="parent"
-                android:layout_marginTop="@dimen/analysisMargin"
-                android:visibility="gone">
+                android:layout_marginTop="@dimen/chipGroupMarginTop"
+                android:visibility="gone"
+                android:layout_marginRight="@dimen/chipGroupPadding">
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip1"
                     style="@style/Widget.MaterialComponents.Chip.Action"
@@ -131,6 +141,7 @@
                     app:chipStrokeColor="@color/chipBorder"
                     app:chipStrokeWidth="1dp"
                     android:layout_margin="@dimen/analysisMargin"
+                    android:textSize="@dimen/chipTextSize"
                     android:text="Early Blight"/>
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip2"
@@ -141,6 +152,7 @@
                     app:chipStrokeColor="@color/chipBorder"
                     app:chipStrokeWidth="1dp"
                     android:layout_margin="@dimen/analysisMargin"
+                    android:textSize="@dimen/chipTextSize"
                     android:text="Early Blight"/>
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chip3"
@@ -151,6 +163,7 @@
                     app:chipStrokeColor="@color/chipBorder"
                     app:chipStrokeWidth="1dp"
                     android:layout_margin="@dimen/analysisMargin"
+                    android:textSize="@dimen/chipTextSize"
                     android:text="Early Blight"/>
 
             </com.google.android.material.chip.ChipGroup>
@@ -158,6 +171,37 @@
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/errorLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="gone">
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/errorAnimationView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:lottie_fileName="empty_list.json"
+            app:lottie_loop="true"
+            app:lottie_autoPlay="true"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/errorText"
+            android:visibility="visible"/>
+        <TextView
+            android:id="@+id/errorText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/errorAnimationView"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:textColor="@color/black"
+            android:textSize="@dimen/analysisTitleSize"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 

@@ -14,6 +14,7 @@
     <color name="green800">#2E7D32</color>
     <color name="green900">#1B5E20</color>
     <color name="white">#fff</color>
+    <color name="black">#000</color>
     <color name="chipBorder">#c2c2c2</color>
     <color name="chipPercentage">#9E9E9E</color>
 </resources>

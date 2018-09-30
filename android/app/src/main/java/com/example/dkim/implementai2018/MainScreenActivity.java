@@ -5,9 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -25,10 +22,11 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,11 +62,16 @@ public class MainScreenActivity extends AppCompatActivity {
     ImageView chosenImageView;
     ImageView backgroundImageView;
     TextView analysisTitle;
+    TextView errorText;
 
     ConstraintLayout mainScreenLayout;
     ConstraintLayout analysisScreenLayout;
     ConstraintLayout bottomLayout;
+    ConstraintLayout errorLayout;
+
+    LottieAnimationView errorAnimationView;
     LottieAnimationView animationView;
+    LottieAnimationView analysisLogoView;
 
     private String imageFilePath;
     private Uri imageFileUri;
@@ -83,15 +86,18 @@ public class MainScreenActivity extends AppCompatActivity {
         setConstraintLayouts();
         setUpImageView();
         setUpAnimationView();
-        setUpAnalysisText();
+        setUpTextViews();
     }
 
-    private void setUpAnalysisText() {
+    private void setUpTextViews() {
         analysisTitle = findViewById(R.id.analysisStatusText);
+        errorText = findViewById(R.id.errorText);
     }
 
     private void setUpAnimationView() {
         animationView = findViewById(R.id.loadingAnimationView);
+        errorAnimationView = findViewById(R.id.errorAnimationView);
+        analysisLogoView = findViewById(R.id.logo);
     }
 
     private void setUpImageView() {
@@ -106,9 +112,9 @@ public class MainScreenActivity extends AppCompatActivity {
 
     private void setConstraintLayouts() {
         mainScreenLayout = findViewById(R.id.mainScreenLayout);
-
         analysisScreenLayout = findViewById(R.id.analysisLayout);
         bottomLayout = findViewById(R.id.bottomPopUpLayout);
+        errorLayout = findViewById(R.id.errorLayout);
     }
 
     private void setUpChips() {
@@ -151,7 +157,6 @@ public class MainScreenActivity extends AppCompatActivity {
             if (cameraIntent.resolveActivity(getPackageManager()) != null) {
                 File photoFile = createImageFile();
 
-
                 if (photoFile != null) {
                     imageFileUri = FileProvider.getUriForFile(
                             this,
@@ -162,7 +167,7 @@ public class MainScreenActivity extends AppCompatActivity {
                     cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageFileUri);
                     startActivityForResult(cameraIntent, CAMERA_PIC_REQUEST);
                 } else {
-                        Timber.e("error creating new file");
+                        showError("Error when getting image file location on device.");
                 }
             }
         });
@@ -203,12 +208,12 @@ public class MainScreenActivity extends AppCompatActivity {
                     storageDir
             );
         } catch (IOException ex) {
-            Timber.e(ex.getMessage());
+            showError(ex.getMessage());
         }
         if (photoFile != null) {
             imageFilePath = photoFile.getAbsolutePath();
         } else {
-            Timber.e("new file path is null");
+            showError("Error when creating image file.");
         }
         return photoFile;
     }
@@ -219,11 +224,7 @@ public class MainScreenActivity extends AppCompatActivity {
             if (data != null) {
                 showAnalysisLayout();
 
-                Picasso.get()
-                        .load(imageFileUri)
-                        .centerCrop()
-                        .fit()
-                        .into(chosenImageView);
+                setChosenImageView(imageFileUri);
                 sendImageToAzure(imageFilePath);
             }
         }
@@ -231,12 +232,7 @@ public class MainScreenActivity extends AppCompatActivity {
             Uri imageUri = data.getData();
             showAnalysisLayout();
 
-            // load image into imageview.
-            Picasso.get()
-                    .load(imageUri)
-                    .centerCrop()
-                    .fit()
-                    .into(chosenImageView);
+            setChosenImageView(imageUri);
 
             // Call the Azure API.
             String path = getRealPathFromURI(this, imageUri);
@@ -244,10 +240,50 @@ public class MainScreenActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Load Image into chosen image view.
+     * @param imageFileUri
+     */
+    private void setChosenImageView(Uri imageFileUri) {
+        Picasso.get()
+                .load(imageFileUri)
+                .centerCrop()
+                .fit()
+                .into(chosenImageView);
+    }
+
     private void showAnalysisLayout() {
-        // Change layout
+        // Change layout.
         mainScreenLayout.setVisibility(View.GONE);
         analysisScreenLayout.setVisibility(View.VISIBLE);
+    }
+
+    private void showError(String message) {
+        Timber.e(message);
+
+        Observable.just(message)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(s -> {
+                    // Hide other layouts.
+                    mainScreenLayout.setVisibility(View.GONE);
+                    bottomLayout.setVisibility(View.GONE);
+                    analysisScreenLayout.setVisibility(View.GONE);
+
+                    // Show error layout.
+                    errorLayout.setVisibility(View.VISIBLE);
+                    errorText.setText(message);
+                }, throwable -> Timber.e(throwable.toString()));
+
+    }
+
+    private void hideError() {
+        // Go back to main screen.
+        mainScreenLayout.setVisibility(View.VISIBLE);
+
+        // Hide other layouts.
+        analysisScreenLayout.setVisibility(View.GONE);
+        bottomLayout.setVisibility(View.GONE);
+        errorLayout.setVisibility(View.GONE);
     }
 
     private void sendImageToAzure(String imageFilePath) {
@@ -271,15 +307,29 @@ public class MainScreenActivity extends AppCompatActivity {
                             PredictionsItem item = plantClassificationResponse.getPredictions().get(i);
                             Chip chip = listOfChips.get(i);
                             String textToDisplay = item.getTagName();
+
+                            chip.setOnClickListener(v -> {
+                                // Set action
+                                String query = null;
+                                try {
+                                    query = URLEncoder.encode(textToDisplay, "UTF-8");
+                                } catch (UnsupportedEncodingException e) {
+                                    showError(e.getMessage());
+                                }
+                                Uri uri = Uri.parse("https://www.google.ca/#q=how+to+deal+with+" + query);
+                                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                                startActivity(intent);
+                            });
                             chip.setText(textToDisplay);
                         }
                     },
-                    throwable -> Timber.e(throwable.toString()));
+                    throwable -> showError(throwable.toString()));
     }
 
     private void stopAnalysisLoading() {
         animationView.setVisibility(View.GONE);
         chipGroup.setVisibility(View.VISIBLE);
+        analysisLogoView.setRepeatCount(0);
     }
 
     private void showAnalysisLoading() {
@@ -289,6 +339,7 @@ public class MainScreenActivity extends AppCompatActivity {
                     analysisTitle.setText(R.string.analyzing);
                     animationView.setVisibility(View.VISIBLE);
                     chipGroup.setVisibility(View.GONE);
+                    analysisLogoView.setRepeatCount(Integer.MAX_VALUE);
                 });
     }
 
@@ -301,7 +352,7 @@ public class MainScreenActivity extends AppCompatActivity {
             cursor.moveToFirst();
             return cursor.getString(column_index);
         } catch (Exception e) {
-            Timber.e("getRealPathFromURI Exception : " + e.toString());
+            showError("Error getting file path from uri: " + e.getMessage());
             return "";
         } finally {
             if (cursor != null) {

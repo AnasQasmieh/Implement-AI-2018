@@ -4,13 +4,19 @@
     <dimen name="buttonHeight">100dp</dimen>
     <dimen name="titleMargin">15dp</dimen>
     <dimen name="titleSize">36dp</dimen>
-    <dimen name="cameraButtonTopMargin">150dp</dimen>
+    <dimen name="cameraButtonTopMargin">180dp</dimen>
     <dimen name="galleryButtonTopMargin">55dp</dimen>
 
     <!--Analysis Screen-->
     <dimen name="backButtonSize">32dp</dimen>
+    <dimen name="backButtonMargin">15dp</dimen>
     <dimen name="analysisImageHeight">350dp</dimen>
     <dimen name="analysisBottomViewHeight">150dp</dimen>
-    <dimen name="analysisLogoSize">24dp</dimen>
+    <dimen name="analysisLogoSize">28dp</dimen>
+    <dimen name="analysisTitleSize">18sp</dimen>
     <dimen name="analysisMargin">10dp</dimen>
+    <dimen name="chosenImageMarginTop">96dp</dimen>
+    <dimen name="chipGroupMarginTop">15dp</dimen>
+    <dimen name="chipTextSize">16sp</dimen>
+    <dimen name="chipGroupPadding">32dp</dimen>
 </resources>
