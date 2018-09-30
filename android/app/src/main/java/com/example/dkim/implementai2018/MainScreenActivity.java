@@ -6,10 +6,13 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.ImageView;
+import android.os.StrictMode;
+import android.provider.MediaStore;
 
 import com.google.android.material.button.MaterialButton;
+
+import java.io.File;
+import java.io.IOException;
 
 import java.io.InputStream;
 
@@ -18,7 +21,10 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import timber.log.Timber;
+
+import static androidx.core.content.FileProvider.getUriForFile;
 
 public class MainScreenActivity extends AppCompatActivity {
     final static int CAMERA_CODE = 1010;
@@ -41,9 +47,33 @@ public class MainScreenActivity extends AppCompatActivity {
         chooseGallery = findViewById(R.id.chooseGallery);
 
         takePhoto.setOnClickListener(v -> {
-           checkAndAskForPermission();
-           Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-           startActivityForResult(intent, CAMERA_PIC_REQUEST);
+            checkAndAskForPermission();
+
+
+            StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+            StrictMode.setVmPolicy(builder.build());
+
+            // Save photo to a file, so that we can access it in gallery.
+            // File name will be some number.jpg
+            String file = String.format("%s.jpg", System.currentTimeMillis());
+            Timber.d("file name will be %s", file);
+            File newFile = new File(file);
+             try {
+                 newFile.createNewFile();
+            } catch (IOException e) {
+                 Timber.e(e.getMessage());
+            }
+
+//            Uri outputUri = getUriForFile(
+//                   MainScreenActivity.this,
+//                   "com.example.dkim.implementai2018.fileprovider",
+//                   newFile
+//            );
+
+//            Uri outputUri = Uri.fromFile(newFile);
+            Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputUri);
+            startActivityForResult(cameraIntent, CAMERA_PIC_REQUEST);
         });
 
         chooseGallery.setOnClickListener(v -> {
@@ -57,8 +87,10 @@ public class MainScreenActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (requestCode == CAMERA_PIC_REQUEST){
-            Bitmap image = (Bitmap) data.getExtras().get("data");
-            Timber.i("Recieved Image");
+            if (data != null) {
+                Bitmap image = (Bitmap) data.getExtras().get("data");
+                Timber.i("Recieved Image");
+            }
         }
         else if (requestCode == CHOOSE_FROM_GALLERY){
             Uri imageUri = data.getData();
@@ -68,7 +100,7 @@ public class MainScreenActivity extends AppCompatActivity {
 
     private void checkAndAskForPermission() {
         if (!isSmsPermissionGranted()) {
-            requestReadAndSendSmsPermission();
+            requestCameraAndStoragePermission();
         }
     }
 
@@ -78,18 +110,19 @@ public class MainScreenActivity extends AppCompatActivity {
      */
     private Boolean isSmsPermissionGranted() {
         return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+                ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
     }
 
     /**
      * Request runtime Camera permission
      */
-    private void requestReadAndSendSmsPermission() {
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_SMS)) {
+    private void requestCameraAndStoragePermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
             // You may display a non-blocking explanation here, read more in the documentation:
             // https://developer.android.com/training/permissions/requesting.html
         }
-        String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE };
+        String[] permissions = {Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE };
         ActivityCompat.requestPermissions(this, permissions, CAMERA_CODE);
     }
 
