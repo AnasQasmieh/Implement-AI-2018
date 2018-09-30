@@ -138,7 +138,8 @@ public class MainScreenActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (analysisScreenLayout.getVisibility() == View.VISIBLE) {
+        if (analysisScreenLayout.getVisibility() == View.VISIBLE ||
+                errorLayout.getVisibility() == View.VISIBLE) {
             goBackToMainScreen();
         } else {
             super.onBackPressed();
@@ -190,6 +191,7 @@ public class MainScreenActivity extends AppCompatActivity {
 
     private void goBackToMainScreen() {
         // go back to main screen
+        errorLayout.setVisibility(View.GONE);
         analysisScreenLayout.setVisibility(View.GONE);
         mainScreenLayout.setVisibility(View.VISIBLE);
     }
@@ -338,6 +340,7 @@ public class MainScreenActivity extends AppCompatActivity {
                 .subscribe(s -> {
                     analysisTitle.setText(R.string.analyzing);
                     animationView.setVisibility(View.VISIBLE);
+                    bottomLayout.setVisibility(View.VISIBLE);
                     chipGroup.setVisibility(View.GONE);
                     analysisLogoView.setRepeatCount(Integer.MAX_VALUE);
                 });
