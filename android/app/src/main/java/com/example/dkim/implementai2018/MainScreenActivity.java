@@ -6,15 +6,16 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.StrictMode;
 import android.provider.MediaStore;
 
+import com.example.dkim.implementai2018.api.MyRetrofitFactory;
+import com.example.dkim.implementai2018.api.plantDisease.ICustomVisionService;
 import com.google.android.material.button.MaterialButton;
 
 import java.io.File;
 import java.io.IOException;
-
-import java.io.InputStream;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,9 +23,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import timber.log.Timber;
-
-import static androidx.core.content.FileProvider.getUriForFile;
 
 public class MainScreenActivity extends AppCompatActivity {
     final static int CAMERA_CODE = 1010;
@@ -34,6 +38,9 @@ public class MainScreenActivity extends AppCompatActivity {
 
     MaterialButton takePhoto;
     MaterialButton chooseGallery;
+
+    private String imageFilePath;
+    private Uri imageFileUri;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -49,31 +56,25 @@ public class MainScreenActivity extends AppCompatActivity {
         takePhoto.setOnClickListener(v -> {
             checkAndAskForPermission();
 
-
-            StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
-            StrictMode.setVmPolicy(builder.build());
-
-            // Save photo to a file, so that we can access it in gallery.
-            // File name will be some number.jpg
-            String file = String.format("%s.jpg", System.currentTimeMillis());
-            Timber.d("file name will be %s", file);
-            File newFile = new File(file);
-             try {
-                 newFile.createNewFile();
-            } catch (IOException e) {
-                 Timber.e(e.getMessage());
-            }
-
-//            Uri outputUri = getUriForFile(
-//                   MainScreenActivity.this,
-//                   "com.example.dkim.implementai2018.fileprovider",
-//                   newFile
-//            );
-
-//            Uri outputUri = Uri.fromFile(newFile);
             Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputUri);
-            startActivityForResult(cameraIntent, CAMERA_PIC_REQUEST);
+
+            if (cameraIntent.resolveActivity(getPackageManager()) != null) {
+                File photoFile = createImageFile();
+
+
+                if (photoFile != null) {
+                    imageFileUri = FileProvider.getUriForFile(
+                            this,
+                            "com.example.dkim.implementai2018.provider",
+                            photoFile
+                    );
+
+                    cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageFileUri);
+                    startActivityForResult(cameraIntent, CAMERA_PIC_REQUEST);
+                } else {
+                        Timber.e("error creating new file");
+                }
+            }
         });
 
         chooseGallery.setOnClickListener(v -> {
@@ -84,12 +85,70 @@ public class MainScreenActivity extends AppCompatActivity {
         });
     }
 
+    private File createImageFile() {
+        // Save photo to a file, so that we can access it in gallery.
+        // File name will be some number.jpg
+        String filename = String.format("%s", System.currentTimeMillis());
+        Timber.d("file name will be %s", filename);
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File photoFile = null;
+        try {
+            photoFile = File.createTempFile(
+                    filename,
+                    ".jpg",
+                    storageDir
+            );
+        } catch (IOException ex) {
+            Timber.e(ex.getMessage());
+        }
+        if (photoFile != null) {
+            imageFilePath = photoFile.getAbsolutePath();
+        } else {
+            Timber.e("new file path is null");
+        }
+        return photoFile;
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (requestCode == CAMERA_PIC_REQUEST){
             if (data != null) {
-                Bitmap image = (Bitmap) data.getExtras().get("data");
-                Timber.i("Recieved Image");
+//                Bitmap image = (Bitmap) data.getExtras().get("data");
+                Uri photoUri = imageFileUri;
+                Timber.d("Received Image");
+
+                // use the FileUtils to get the actual file by uri
+
+                File image = new File(imageFilePath);
+
+                RequestBody fbody = RequestBody.create(MediaType.parse("image/*"), image);
+
+                // create RequestBody instance from file
+                RequestBody requestFile =
+                        RequestBody.create(
+                                MediaType.parse(getContentResolver().getType(photoUri)),
+                                image
+                        );
+
+                // MultipartBody.Part is used to send also the actual file name
+                MultipartBody.Part body =
+                        MultipartBody.Part.createFormData("picture", image.getName(), requestFile);
+
+                MultipartBody.Part filePart = MultipartBody.Part.createFormData(
+                        imageFilePath,
+                        image.getName(),
+                        RequestBody.create(
+                                MediaType.parse("application/octet-stream"),
+                                image));
+
+                ICustomVisionService customVisionService = MyRetrofitFactory.INSTANCE.getCustomVisionService();
+                RequestBody abody = RequestBody.create(
+                        MediaType.parse("application/octet-stream"),
+                        image);
+                Disposable getPredictionDisposable = customVisionService.getPrediction(abody)
+                    .subscribeOn(Schedulers.io())
+                    .subscribe(plantClassificationResponse -> Timber.d(plantClassificationResponse.toString()),
+                            throwable -> Timber.e(throwable.toString()));
             }
         }
         else if (requestCode == CHOOSE_FROM_GALLERY){
