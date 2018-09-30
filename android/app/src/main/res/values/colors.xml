@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#43A047</color>
+    <color name="colorPrimaryDark">#1B5E20</color>
+    <color name="colorAccent">#fff</color>
+    <color name="green50">#E8F5E9</color>
+    <color name="green100">#C8E6C9</color>
+    <color name="green200">#A5D6A7</color>
+    <color name="green300">#81C784</color>
+    <color name="green400">#66BB6A</color>
+    <color name="green500">#4CAF50</color>
+    <color name="green600">#43A047</color>
+    <color name="green700">#388E3C</color>
+    <color name="green800">#2E7D32</color>
+    <color name="green900">#1B5E20</color>
+    <color name="white">#fff</color>
+    <color name="black">#000</color>
+    <color name="chipBorder">#c2c2c2</color>
+    <color name="chipPercentage">#9E9E9E</color>
+</resources>
