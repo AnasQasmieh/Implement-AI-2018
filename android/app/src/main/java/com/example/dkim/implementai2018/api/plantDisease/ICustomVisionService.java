@@ -3,13 +3,10 @@ package com.example.dkim.implementai2018.api.plantDisease;
 import com.example.dkim.implementai2018.api.plantDisease.Response.PlantClassificationResponse;
 
 import io.reactivex.Observable;
-import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import retrofit2.http.Body;
 import retrofit2.http.Headers;
-import retrofit2.http.Multipart;
 import retrofit2.http.POST;
-import retrofit2.http.Part;
 
 public interface ICustomVisionService {
     final static String PREDICTION_ENDPOINT = "https://southcentralus.api.cognitive.microsoft.com/customvision/v2.0/";

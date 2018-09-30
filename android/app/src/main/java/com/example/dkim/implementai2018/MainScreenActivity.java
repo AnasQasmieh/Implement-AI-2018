@@ -1,13 +1,16 @@
 package com.example.dkim.implementai2018;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 
 import com.example.dkim.implementai2018.api.MyRetrofitFactory;
@@ -16,6 +19,8 @@ import com.google.android.material.button.MaterialButton;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -80,7 +85,7 @@ public class MainScreenActivity extends AppCompatActivity {
         chooseGallery.setOnClickListener(v -> {
             Intent intent = new Intent();
             intent.setType("image/*");
-            intent.setAction(Intent.ACTION_GET_CONTENT);
+            intent.setAction(Intent.ACTION_PICK);
             startActivityForResult(Intent.createChooser(intent, "Select Picture"), CHOOSE_FROM_GALLERY);
         });
     }
@@ -113,47 +118,44 @@ public class MainScreenActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (requestCode == CAMERA_PIC_REQUEST){
             if (data != null) {
-//                Bitmap image = (Bitmap) data.getExtras().get("data");
-                Uri photoUri = imageFileUri;
-                Timber.d("Received Image");
-
-                // use the FileUtils to get the actual file by uri
-
-                File image = new File(imageFilePath);
-
-                RequestBody fbody = RequestBody.create(MediaType.parse("image/*"), image);
-
-                // create RequestBody instance from file
-                RequestBody requestFile =
-                        RequestBody.create(
-                                MediaType.parse(getContentResolver().getType(photoUri)),
-                                image
-                        );
-
-                // MultipartBody.Part is used to send also the actual file name
-                MultipartBody.Part body =
-                        MultipartBody.Part.createFormData("picture", image.getName(), requestFile);
-
-                MultipartBody.Part filePart = MultipartBody.Part.createFormData(
-                        imageFilePath,
-                        image.getName(),
-                        RequestBody.create(
-                                MediaType.parse("application/octet-stream"),
-                                image));
-
-                ICustomVisionService customVisionService = MyRetrofitFactory.INSTANCE.getCustomVisionService();
-                RequestBody abody = RequestBody.create(
-                        MediaType.parse("application/octet-stream"),
-                        image);
-                Disposable getPredictionDisposable = customVisionService.getPrediction(abody)
-                    .subscribeOn(Schedulers.io())
-                    .subscribe(plantClassificationResponse -> Timber.d(plantClassificationResponse.toString()),
-                            throwable -> Timber.e(throwable.toString()));
+                sendImageToAzure(imageFilePath);
             }
         }
         else if (requestCode == CHOOSE_FROM_GALLERY){
             Uri imageUri = data.getData();
-            Timber.i("Chose Image");
+            String path = getRealPathFromURI(this, imageUri);
+            sendImageToAzure(path);
+        }
+    }
+
+    private void sendImageToAzure(String imageFilePath) {
+        File image = new File(imageFilePath);
+
+        ICustomVisionService customVisionService = MyRetrofitFactory.INSTANCE.getCustomVisionService();
+        RequestBody abody = RequestBody.create(
+                MediaType.parse("application/octet-stream"),
+                image);
+        Disposable getPredictionDisposable = customVisionService.getPrediction(abody)
+            .subscribeOn(Schedulers.io())
+            .subscribe(plantClassificationResponse -> Timber.d(plantClassificationResponse.toString()),
+                    throwable -> Timber.e(throwable.toString()));
+    }
+
+    private String getRealPathFromURI(Context context, Uri contentUri) {
+        Cursor cursor = null;
+        try {
+            String[] proj = { MediaStore.Images.Media.DATA };
+            cursor = context.getContentResolver().query(contentUri,  proj, null, null, null);
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+        } catch (Exception e) {
+            Timber.e("getRealPathFromURI Exception : " + e.toString());
+            return "";
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
         }
     }
 
