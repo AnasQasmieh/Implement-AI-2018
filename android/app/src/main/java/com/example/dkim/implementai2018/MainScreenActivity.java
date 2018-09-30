@@ -1,6 +1,7 @@
 package com.example.dkim.implementai2018;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -27,8 +28,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -54,10 +53,6 @@ public class MainScreenActivity extends AppCompatActivity {
     MaterialButton takePhoto;
     MaterialButton chooseGallery;
     ChipGroup chipGroup;
-    Chip chip1;
-    Chip chip2;
-    Chip chip3;
-    List<Chip> listOfChips;
     ImageButton backButton;
     ImageView chosenImageView;
     ImageView backgroundImageView;
@@ -68,6 +63,7 @@ public class MainScreenActivity extends AppCompatActivity {
     ConstraintLayout analysisScreenLayout;
     ConstraintLayout bottomLayout;
     ConstraintLayout errorLayout;
+    ConstraintLayout successLayout;
 
     LottieAnimationView errorAnimationView;
     LottieAnimationView animationView;
@@ -76,6 +72,7 @@ public class MainScreenActivity extends AppCompatActivity {
     private String imageFilePath;
     private Uri imageFileUri;
     private Disposable getPredictionDisposable;
+    private Boolean hasChip;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -115,17 +112,12 @@ public class MainScreenActivity extends AppCompatActivity {
         analysisScreenLayout = findViewById(R.id.analysisLayout);
         bottomLayout = findViewById(R.id.bottomPopUpLayout);
         errorLayout = findViewById(R.id.errorLayout);
+        successLayout = findViewById(R.id.successLayout);
+
     }
 
     private void setUpChips() {
         chipGroup = findViewById(R.id.chipGroup);
-        chip1 = findViewById(R.id.chip1);
-        chip2 = findViewById(R.id.chip2);
-        chip3 = findViewById(R.id.chip3);
-        listOfChips = new ArrayList<>();
-        listOfChips.add(chip1);
-        listOfChips.add(chip2);
-        listOfChips.add(chip3);
     }
 
     @Override
@@ -222,7 +214,8 @@ public class MainScreenActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        if (requestCode == CAMERA_PIC_REQUEST){
+        if (requestCode == CAMERA_PIC_REQUEST &&
+                resultCode == Activity.RESULT_OK){
             if (data != null) {
                 showAnalysisLayout();
 
@@ -230,7 +223,9 @@ public class MainScreenActivity extends AppCompatActivity {
                 sendImageToAzure(imageFilePath);
             }
         }
-        else if (requestCode == CHOOSE_FROM_GALLERY){
+        else if (requestCode == CHOOSE_FROM_GALLERY &&
+                resultCode == Activity.RESULT_OK){
+
             Uri imageUri = data.getData();
             showAnalysisLayout();
 
@@ -238,6 +233,8 @@ public class MainScreenActivity extends AppCompatActivity {
 
             // Call the Azure API.
             String path = getRealPathFromURI(this, imageUri);
+
+            // Change suffix.
             sendImageToAzure(path);
         }
     }
@@ -252,12 +249,6 @@ public class MainScreenActivity extends AppCompatActivity {
                 .centerCrop()
                 .fit()
                 .into(chosenImageView);
-    }
-
-    private void showAnalysisLayout() {
-        // Change layout.
-        mainScreenLayout.setVisibility(View.GONE);
-        analysisScreenLayout.setVisibility(View.VISIBLE);
     }
 
     private void showError(String message) {
@@ -304,34 +295,73 @@ public class MainScreenActivity extends AppCompatActivity {
                         Timber.d(plantClassificationResponse.toString());
                         stopAnalysisLoading();
 
-                        analysisTitle.setText(R.string.disease_exists);
+                        hasChip = false;
+                        chipGroup.removeAllViews();
                         for(int i = 0; i < 3; i++) {
                             PredictionsItem item = plantClassificationResponse.getPredictions().get(i);
-                            Chip chip = listOfChips.get(i);
-                            String textToDisplay = item.getTagName();
+                            if (item.getProbability() > 0.85) {
+                                // Add chip
+                                Chip chip = new Chip(chipGroup.getContext());
+                                chip.setClickable(true);
 
-                            chip.setOnClickListener(v -> {
-                                // Set action
-                                String query = null;
-                                try {
-                                    query = URLEncoder.encode(textToDisplay, "UTF-8");
-                                } catch (UnsupportedEncodingException e) {
-                                    showError(e.getMessage());
+//                                String textToDisplay = String.format("%f %% likely to be %s", (item.getProbability() * 100), item.getTagName());
+                                String className = item.getTagName();
+
+                                if (Utility.Companion.getDiseaseMap().containsKey(className)) {
+                                    className = Utility.Companion.getDiseaseMap().get(className);
                                 }
-                                Uri uri = Uri.parse("https://www.google.ca/#q=how+to+deal+with+" + query);
-                                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                                startActivity(intent);
-                            });
-                            chip.setText(textToDisplay);
+
+                                if (className.equals("H")) {
+                                    continue;
+                                }
+
+                                String textToDisplay = className;
+
+                                chip.setOnClickListener(v -> {
+                                    // Set action
+                                    String query = null;
+                                    try {
+                                        query = URLEncoder.encode(textToDisplay, "UTF-8");
+                                    } catch (UnsupportedEncodingException e) {
+                                        showError(e.getMessage());
+                                    }
+                                    Uri uri = Uri.parse("https://www.google.ca/#q=how+to+deal+with+" + query);
+                                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                                    startActivity(intent);
+                                });
+                                chip.setText(textToDisplay);
+                                chipGroup.addView(chip);
+                                hasChip = true;
+                            }
                         }
+                        int a = analysisScreenLayout.getVisibility();
+                        int b = bottomLayout.getVisibility();
+                        int c = errorLayout.getVisibility();
+                        if (hasChip) {
+                            analysisTitle.setText(R.string.disease_exists);
+                            chipGroup.setVisibility(View.VISIBLE);
+                            successLayout.setVisibility(View.GONE);
+                        } else {
+                            analysisTitle.setText(R.string.disease_does_not_exist);
+                            chipGroup.setVisibility(View.GONE);
+                            successLayout.setVisibility(View.VISIBLE);
+                        }
+
                     },
                     throwable -> showError(throwable.toString()));
     }
 
     private void stopAnalysisLoading() {
         animationView.setVisibility(View.GONE);
-        chipGroup.setVisibility(View.VISIBLE);
+//        chipGroup.setVisibility(View.VISIBLE);
         analysisLogoView.setRepeatCount(0);
+    }
+
+
+    private void showAnalysisLayout() {
+        // Change layout.
+        mainScreenLayout.setVisibility(View.GONE);
+        analysisScreenLayout.setVisibility(View.VISIBLE);
     }
 
     private void showAnalysisLoading() {
@@ -342,6 +372,7 @@ public class MainScreenActivity extends AppCompatActivity {
                     animationView.setVisibility(View.VISIBLE);
                     bottomLayout.setVisibility(View.VISIBLE);
                     chipGroup.setVisibility(View.GONE);
+                    successLayout.setVisibility(View.GONE);
                     analysisLogoView.setRepeatCount(Integer.MAX_VALUE);
                 });
     }
