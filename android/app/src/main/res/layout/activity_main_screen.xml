@@ -184,13 +184,15 @@
         android:visibility="gone">
         <com.airbnb.lottie.LottieAnimationView
             android:id="@+id/errorAnimationView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/errorAnimationSize"
+            android:layout_height="@dimen/errorAnimationSize"
             app:lottie_fileName="empty_list.json"
             app:lottie_loop="true"
             app:lottie_autoPlay="true"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/errorText"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:layout_marginTop="@dimen/errorTopMargin"
             android:visibility="visible"/>
         <TextView
             android:id="@+id/errorText"
@@ -199,7 +201,7 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/errorAnimationView"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:padding="@dimen/errorTextPadding"
             android:textColor="@color/black"
             android:textSize="@dimen/analysisTitleSize"/>
     </androidx.constraintlayout.widget.ConstraintLayout>

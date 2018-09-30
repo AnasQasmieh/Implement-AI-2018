@@ -19,4 +19,9 @@
     <dimen name="chipGroupMarginTop">15dp</dimen>
     <dimen name="chipTextSize">16sp</dimen>
     <dimen name="chipGroupPadding">32dp</dimen>
+
+    <!--Error screen-->
+    <dimen name="errorAnimationSize">300dp</dimen>
+    <dimen name="errorTopMargin">100dp</dimen>
+    <dimen name="errorTextPadding">50dp</dimen>
 </resources>
