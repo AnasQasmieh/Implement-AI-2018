@@ -4,11 +4,14 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.google.android.material.button.MaterialButton;
+
+import java.io.InputStream;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,6 +24,7 @@ public class MainScreenActivity extends AppCompatActivity {
     final static int CAMERA_CODE = 1010;
 
     final static int CAMERA_PIC_REQUEST = 1;
+    final static int CHOOSE_FROM_GALLERY = 2;
 
     MaterialButton takePhoto;
     MaterialButton chooseGallery;
@@ -36,11 +40,17 @@ public class MainScreenActivity extends AppCompatActivity {
         takePhoto = findViewById(R.id.takePhoto);
         chooseGallery = findViewById(R.id.chooseGallery);
 
-
         takePhoto.setOnClickListener(v -> {
            checkAndAskForPermission();
            Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
            startActivityForResult(intent, CAMERA_PIC_REQUEST);
+        });
+
+        chooseGallery.setOnClickListener(v -> {
+            Intent intent = new Intent();
+            intent.setType("image/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            startActivityForResult(Intent.createChooser(intent, "Select Picture"), CHOOSE_FROM_GALLERY);
         });
     }
 
@@ -49,6 +59,10 @@ public class MainScreenActivity extends AppCompatActivity {
         if (requestCode == CAMERA_PIC_REQUEST){
             Bitmap image = (Bitmap) data.getExtras().get("data");
             Timber.i("Recieved Image");
+        }
+        else if (requestCode == CHOOSE_FROM_GALLERY){
+            Uri imageUri = data.getData();
+            Timber.i("Chose Image");
         }
     }
 
