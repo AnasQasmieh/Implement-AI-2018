@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Green Detect</string>
+    <string name="disease_exists">It might be one of these</string>
+    <string name="disease_does_not_exist">Looks like a healthy leaf!</string>
+    <string name="analyzing">Analyzing...</string>
+    <string name="chosenimageview">chosenImageView</string>
+    <string name="analysis_logo">analysis logo</string>
+</resources>
